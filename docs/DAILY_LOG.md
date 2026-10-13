@@ -44,3 +44,15 @@ Remaining work:
 - Continue core backend implementation with task APIs and orchestration contracts.
 - Ask before creating or connecting a GitHub remote.
 - Configure commit signing before making official signed commits.
+
+## 2026-10-13
+
+Work Performed:
+
+- Created Agent and Agent Registry java files
+- Organized the file structure
+- This Agent Registry file is used to interact with the core orchestrator and manage the virtual thread registration
+
+Remaining work:
+
+- Test the Agent files. Hope it will be completed by tomorrow 14-10-2026
