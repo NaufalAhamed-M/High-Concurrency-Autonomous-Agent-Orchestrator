@@ -11,6 +11,7 @@
 - Created initial project tracking documentation.
 - Extracted the official PDF requirements for Project 1 using Apache PDFBox.
 - Initialized a local Git repository on branch `main`.
+- Added Agent and Agent Registry to the project which helps to register the agent with the core orchestrator
 
 ## Pending Tasks
 

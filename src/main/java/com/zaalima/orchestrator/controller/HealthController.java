@@ -1,4 +1,4 @@
-package com.zaalima.orchestrator.api;
+package com.zaalima.orchestrator.controller;
 
 import com.zaalima.orchestrator.api.dto.HealthResponse;
 import java.time.Instant;
@@ -15,7 +15,9 @@ public class HealthController {
     private final BuildProperties buildProperties;
 
     public HealthController(BuildProperties buildProperties) {
+
         this.buildProperties = buildProperties;
+
     }
 
     @GetMapping("/health")
