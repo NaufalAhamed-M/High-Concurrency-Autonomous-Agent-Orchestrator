@@ -1,36 +1,32 @@
 # Architecture
 
-## Current System Shape
+Updated: 2026-10-15.
 
-Client or Postman sends HTTP requests to Spring Boot REST controllers. Controllers validate input and delegate to application services. The orchestration service will coordinate task lifecycle, select agents through an agent gateway interface, execute work through a concurrency engine interface, and aggregate results.
+## Implemented Components
 
-## Package Direction
+- api: one health controller, task controller, centralized MVC/task exception handling.
+- api.dto: validated task request and task/health response DTOs.
+- core: immutable snapshots, QUEUED/CANCELLED lifecycle, submission/lookup/cancellation service.
+- config: UTC clock, validated task capacity, Spring Boot virtual-thread setting.
+- agent: Ahamed's model and registry interface, retained unchanged.
+- integration: proposed discovery/client/execution ports; production adapters are not wired.
 
-- `com.zaalima.orchestrator.api`: REST controllers.
-- `com.zaalima.orchestrator.api.dto`: external request and response DTOs.
-- `com.zaalima.orchestrator.config`: application configuration.
-- `com.zaalima.orchestrator.core`: orchestration domain and service logic, to be added.
-- `com.zaalima.orchestrator.integration`: interfaces for teammate-owned modules, to be added.
+## Request Flow
 
-## Implemented Flow
+1. POST /api/v1/tasks validates capability and string payload.
+2. TaskService reserves capacity without blocking and stores an immutable QUEUED task in a ConcurrentHashMap.
+3. Controller returns HTTP 202 with Location and a task snapshot.
+4. GET returns a snapshot or HTTP 404.
+5. DELETE atomically transitions QUEUED to CANCELLED. Repeated cancellation preserves the first cancellation snapshot.
 
-`GET /api/v1/health`
+Capacity applies to all stored records, including cancelled tasks. Records are not evicted, disappear at restart, and are not shared across instances. This is an in-memory API foundation, not a distributed task queue.
 
-1. `HealthController` receives the request.
-2. It returns service name, version, status, and timestamp.
+## Future Execution Flow
 
-## Planned Task Flow
+After contracts/adapters are approved, orchestration will discover agents through AgentDirectory, submit work through TaskExecutionEngine, invoke AgentClient, and aggregate results. Execution states, deadlines, running-task cancellation, and result APIs remain pending. Redis interfaces/event schemas require agreement with Navitha.
 
-1. Client submits a task request.
-2. REST controller validates request body.
-3. Orchestration service creates a task record and lifecycle state.
-4. Orchestration service asks the agent registry/communication interface for available agents.
-5. Orchestration service delegates execution through the concurrency engine interface.
-6. Result aggregation updates task status and response data.
-7. Client polls task status or receives final response depending on API design.
+## Verification and Boundaries
 
-## Design Constraints
+Real HTTP RANDOM_PORT SpringBootTest suites exercise full component scanning and catch the duplicate-controller regression. Service tests check immutable payloads, cancellation, lookup, and concurrent capacity admission.
 
-- Keep orchestration independent from Redis, gRPC, and concrete thread execution details.
-- Use dependency injection for integration boundaries.
-- Label test doubles and mocks clearly.
+The API binds to localhost by default because authentication is pending. No pinning, leak, cluster, or 10,000-connection guarantee has been established.

@@ -42,6 +42,8 @@ Responsibilities:
 
 Production implementation status: WAITING FOR TEAMMATE
 
+October 15 review: Ahamed's Agent model and AgentRegistry interface from ab0eff8 are retained. Registry implementation, registration/communication endpoints, security, discovery, heartbeat rules, and tests remain pending. Agent collection immutability needs his follow-up. HARI fixed the duplicate health controller and proposed core integration ports without taking over the agent implementation.
+
 ## Member 4: Navitha
 
 Module: Redis Coordination
@@ -66,3 +68,5 @@ Production implementation status: WAITING FOR TEAMMATE
 - Week 4 Virtual Threads vs platform threads benchmark.
 - Week 4 live terminal dashboard.
 - Week 4 final demonstration packaging.
+- Final architectural evaluation roadmap and scoring matrices.
+- Validation of the 10,000+ concurrent connection target.
