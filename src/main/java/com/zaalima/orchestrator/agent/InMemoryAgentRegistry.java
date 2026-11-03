@@ -1,6 +1,7 @@
 package com.zaalima.orchestrator.agent;
 
-import java.time.Instant;
+import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -11,6 +12,11 @@ public class InMemoryAgentRegistry implements AgentRegistry {
     private final ConcurrentHashMap<String, Agent> byId = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, String> idByName = new ConcurrentHashMap<>();
     private final ReentrantLock writeLock = new ReentrantLock();
+    private final Clock clock;
+
+    public InMemoryAgentRegistry(Clock clock) {
+        this.clock = clock;
+    }
 
     @Override
     public Agent registerIfAbsent(Agent candidate) {
@@ -36,7 +42,8 @@ public class InMemoryAgentRegistry implements AgentRegistry {
 
     @Override
     public Optional<Agent> heartbeat(String id) {
-        return Optional.ofNullable(byId.computeIfPresent(id, (k, a) -> a.withHeartbeat(Instant.now())));
+        // computeIfPresent never inserts, so a heartbeat cannot resurrect a removed agent.
+        return Optional.ofNullable(byId.computeIfPresent(id, (k, a) -> a.withHeartbeat(clock.instant())));
     }
 
     @Override
@@ -50,6 +57,11 @@ public class InMemoryAgentRegistry implements AgentRegistry {
         } finally {
             writeLock.unlock();
         }
+    }
+
+    @Override
+    public List<Agent> findAll() {
+        return List.copyOf(byId.values());
     }
 
     @Override
