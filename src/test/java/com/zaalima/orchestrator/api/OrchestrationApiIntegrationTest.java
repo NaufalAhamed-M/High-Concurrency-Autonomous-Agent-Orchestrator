@@ -174,7 +174,7 @@ class OrchestrationApiIntegrationTest {
         }
 
         private Agent agent(String id, String capability) {
-            return new Agent(id, id, "test-only", Set.of(capability), Map.of(), Instant.EPOCH, Instant.EPOCH);
+            return new Agent(id, "test-only", "test", Set.of(capability), Map.of(), Instant.EPOCH, Instant.EPOCH);
         }
 
         @Bean
