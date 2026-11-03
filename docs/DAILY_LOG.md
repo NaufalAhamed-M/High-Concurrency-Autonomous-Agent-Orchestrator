@@ -180,3 +180,48 @@ Remaining work:
 - Review uncommitted feature/week1-foundation changes and resolve the external signing/main-protection steps before claiming full Week 1 acceptance.
 - GitHub account public-key registration/verification, protected main and remote CI evidence remain IN PROGRESS. User-controlled signed commit/PR is still needed.
 - Secure registration/communication, production concurrency engine, and Redis adapters remain with their owners; Week 3/4 unassigned work remains unassigned.
+
+## 2026-11-03
+
+Done:
+
+- Added `RegistryAgentDirectory`, which implements the shared `AgentDirectory` interface.
+  It returns agents that support the requested capability, have an endpoint, and have
+  heartbeated within the TTL, in a stable order (name, then id).
+- Added `AgentProperties` (`orchestrator.agents.heartbeat-ttl`, default 45s, must be positive)
+  and `AgentConfiguration`, following the same pattern as the task module's
+  `TaskProperties` and `TaskConfiguration`.
+- Extended `Agent` with an `endpoint` URI (the scheme selects REST or gRPC), plus
+  `supports()`, `isReachable()` and `isAvailable(now, ttl)`.
+- Added `findAll()` to `AgentRegistry` and moved `InMemoryAgentRegistry` onto the shared
+  `Clock` bean instead of `Instant.now()`.
+
+Errors fixed:
+
+- `Agent.java`: the record header had `endpoint` last, but `create(...)` and `withHeartbeat`
+  still passed it in the old position. Corrected the argument order.
+- Added a 7-argument compatibility constructor on `Agent`, so existing code that builds an
+  agent without an endpoint still compiles.
+- `OrchestrationService`: the defensive copy of each agent was dropping the endpoint.
+  Now passes `agent.endpoint()` through. (Teammate's file; flagged to them.)
+- `OrchestrationApiIntegrationTest`: the `Agent` construction was missing the version
+  argument. Fixed.
+- `HealthControllerTest`: "cannot resolve HealthController". [State the actual cause you
+  found: missing file / source root / Maven reload.] Also added the `build-info` goal
+  to `pom.xml` because the test depends on it.
+
+Results:
+- `./mvnw test`: [N passed, N failed]
+- Branch: `[your-prefix/feature/agent-availability-discovery]`
+
+Notes:
+- `Agent` is a shared type used by the task module's code.
+- The directory only returns agents that have an endpoint, since the client cannot call
+  an agent without one.
+
+Next:
+- `AgentRegistrationService` (API key check, JWT issuing) and the REST controller at
+  `/api/v1/agents`, with exceptions added to the shared `ApiExceptionHandler`.
+- Then the REST `AgentClient`, followed by gRPC.
+
+
